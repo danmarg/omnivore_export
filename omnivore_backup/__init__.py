@@ -38,18 +38,19 @@ def main():
     for article in pages:
         print(f'Saving {article["node"]["slug"]}...')
         path = os.path.join(args.backup, article["node"]["slug"])
+        meta = article["node"]
         if os.path.exists(path):
+            # Update the metadata only:
+            with open(os.path.join(path, "meta.json"), "w") as metadata:
+                json.dump(meta, metadata)
             continue
-        # Get content
-        article = get_article(article["node"]["slug"])
-        content = article["content"]
-        del article["content"]
-
+        # Get content:
         os.mkdir(path)
-        with open(os.path.join(path, "meta.json"), "w") as meta:
-            with open(os.path.join(path, "content.md"), "w") as markdown:
-                markdown.write(content)
-                json.dump(article, meta)
+        content = get_article(article["node"]["slug"])["content"]
+        with open(os.path.join(path, "meta.json"), "w") as metadata:
+            json.dump(meta, metadata)
+        with open(os.path.join(path, "content.md"), "w") as markdown:
+            markdown.write(content)
 
 
 main()
