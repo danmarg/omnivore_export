@@ -1,10 +1,10 @@
-# Instabackup
+# Omnivore export
 
-Backup Instapaper locally, with (relatively) smart incremental backups.
+Backup Omnivore.app locally, with (relatively) smart incremental backups.
 
-Get an OAuth client ID/secret from [here](https://www.instapaper.com/main/request_oauth_consumer_token). Then, 
+Get an API key here: https://omnivore.app/settings/api.
 
 ```
-$ pip3 install git+https://github.com/danmarg/Instabackup.git
-$ instabackup --username <your username> --password <your password> --client_id <your client ID> --client_secret <your client secret> --backup <backup dir>
+$ pip3 install git+https://github.com/danmarg/omnivore_export.git
+$ omnivore_export --api_key <your API key secret> --backup <backup dir>
 ```
