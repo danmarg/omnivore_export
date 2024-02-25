@@ -3,6 +3,7 @@ import os.path
 import json
 
 from omnivoreql import OmnivoreQL
+from retry import retry
 
 
 def main():
@@ -18,12 +19,19 @@ def main():
         return
     omnivoreql_client = OmnivoreQL(args.api_key)
 
+    @retry(delay=1, backoff=2)
     def get_articles(cursor=None):
         print(f"Fetching page {cursor if cursor else 0}...")
         page = omnivoreql_client.get_articles(cursor=cursor)["search"]
         if not page["pageInfo"]["hasNextPage"]:
             return page["edges"]
         return page["edges"] + get_articles(cursor=page["pageInfo"]["endCursor"])
+
+    @retry(delay=1, backoff=2)
+    def get_article(slug):
+        return omnivoreql_client.get_article(
+                omnivoreql_client.get_profile()["me"]["profile"]["username"],
+                slug, format="markdown")["article"]["article"]
 
     pages = get_articles()
 
@@ -33,11 +41,7 @@ def main():
         if os.path.exists(path):
             continue
         # Get content
-        article = omnivoreql_client.get_article(
-            omnivoreql_client.get_profile()["me"]["profile"]["username"],
-            article["node"]["slug"],
-            format="markdown",
-        )["article"]["article"]
+        article = get_article(article["node"]["slug"])
         content = article["content"]
         del article["content"]
 
