@@ -28,8 +28,7 @@ def main():
     @retry(delay=1, backoff=2)
     def get_articles(cursor=0):
         print(f"Fetching page {cursor if cursor else 0}...")
-        page = omnivoreql_client.get_articles(after=cursor)["search"]
-        #page = omnivoreql_client.get_articles()["search"]
+        page = omnivoreql_client.get_articles(query="in:all", after=cursor)["search"]
         if not page["pageInfo"]["hasNextPage"]:
             return page["edges"]
         return page["edges"] + get_articles(cursor=page["pageInfo"]["endCursor"])
@@ -66,11 +65,17 @@ def main():
             with open(os.path.join(path, "content.md"), "w") as markdown:
                 markdown.write(content)
         if args.csv:
+            folder = "Unread"
+            labels = article["node"]["labels"]
+            if labels:
+                folder = labels[0]["name"]
+            elif article["node"]["isArchived"]:
+                folder = "Archive"
             csv_writer.writerow([
                 article["node"]["url"], 
                 article["node"]["title"],
                 "",
-                article["node"]["folder"],
+                folder,
                 int(datetime.datetime.fromisoformat(article["node"]["createdAt"]).timestamp())
                 ,
             ])
